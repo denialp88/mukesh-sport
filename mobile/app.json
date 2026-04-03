@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Mukesh Sport",
+    "slug": "mukesh-sport",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0f172a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.mukeshsport.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      },
+      "package": "com.mukeshsport.app"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
