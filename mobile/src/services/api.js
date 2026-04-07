@@ -2,9 +2,8 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { getItem } from './storage';
 
-const API_URL = Platform.OS === 'web'
-  ? 'http://localhost:3000/api'
-  : 'http://192.168.1.100:3000/api'; // Change IP for physical device testing
+// Production EC2 server
+const API_URL = 'http://54.82.92.185/api';
 
 const api = axios.create({
   baseURL: API_URL,
