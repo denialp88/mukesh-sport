@@ -3,3 +3,5 @@ node_modules/
 .expo/
 dist/
 *.log
+*.pem
+setup-ec2.sh
