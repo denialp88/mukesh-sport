@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
-  Share,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,6 +53,21 @@ export default function RepairDetailScreen({ route }) {
     setRefreshing(false);
   };
 
+  const sendWhatsApp = async (phone, text) => {
+    const cleaned = phone.replace(/\D/g, '');
+    const phone91 = cleaned.startsWith('91') ? cleaned : '91' + cleaned;
+    const msg = encodeURIComponent(text);
+    Linking.openURL('https://wa.me/' + phone91 + '?text=' + msg);
+  };
+
+  const shortenUrl = async (url) => {
+    try {
+      const res = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url));
+      if (res.ok) return await res.text();
+    } catch (e) {}
+    return url;
+  };
+
   const handleStatusUpdate = (newStatus) => {
     Alert.alert(
       'Update Status',
@@ -65,7 +80,34 @@ export default function RepairDetailScreen({ route }) {
             try {
               await updateRepairStatus(jobId, { status: newStatus });
               fetchData();
-              Alert.alert('Success', 'Status updated!');
+
+              if (newStatus === 'ready_for_pickup' && job?.customer_phone) {
+                const trackUrl = await shortenUrl('http://54.82.92.185/track/' + job.tracking_token);
+                Alert.alert(
+                  'Status Updated!',
+                  'Notify customer on WhatsApp?',
+                  [
+                    { text: 'Skip' },
+                    {
+                      text: 'Send WhatsApp',
+                      onPress: () => sendWhatsApp(job.customer_phone,
+                        '*Mukesh Sport* 🏏\n' +
+                        '━━━━━━━━━━━━━━\n\n' +
+                        '✅ *Your item is Ready for Pickup!*\n\n' +
+                        '📋 *Job ID:* ' + job.job_id + '\n' +
+                        '🏷️ *Item:* ' + job.item_name + '\n\n' +
+                        '📍 Please visit our store to collect your item.\n\n' +
+                        '👇 *Track status:*\n\n' +
+                        trackUrl + '\n\n' +
+                        '━━━━━━━━━━━━━━\n' +
+                        'Thank you for choosing Mukesh Sport!'
+                      ),
+                    },
+                  ]
+                );
+              } else {
+                Alert.alert('Success', 'Status updated!');
+              }
             } catch (err) {
               Alert.alert('Error', 'Failed to update status.');
             }
@@ -77,14 +119,19 @@ export default function RepairDetailScreen({ route }) {
 
   const handleShare = async () => {
     if (!job) return;
-    const trackingUrl = 'http://192.168.1.100:3000/track/' + job.tracking_token;
-    try {
-      await Share.share({
-        message: 'Track your repair status for ' + job.item_name + ' at Mukesh Sport:\n' + trackingUrl,
-      });
-    } catch (err) {
-      console.error('Share error:', err);
-    }
+    const trackUrl = await shortenUrl('http://54.82.92.185/track/' + job.tracking_token);
+    const msg =
+      '*Mukesh Sport* 🏏\n' +
+      '━━━━━━━━━━━━━━\n\n' +
+      '🔧 *Repair Status Update*\n\n' +
+      '📋 *Job ID:* ' + job.job_id + '\n' +
+      '🏷️ *Item:* ' + job.item_name + '\n' +
+      '📌 *Status:* ' + STATUS_LABELS[job.status] + '\n\n' +
+      '👇 *Track your repair:*\n\n' +
+      trackUrl + '\n\n' +
+      '━━━━━━━━━━━━━━\n' +
+      'Thank you for choosing Mukesh Sport!';
+    sendWhatsApp(job.customer_phone, msg);
   };
 
   if (!job) return <View style={styles.container} />;
