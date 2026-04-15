@@ -87,9 +87,14 @@ export default function CreateInstallmentScreen({ navigation }) {
         frequency,
         start_date: startDate.toISOString().split('T')[0],
       });
-      Alert.alert('Success', 'Installment plan created!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+
+      // Navigate back first so list refreshes immediately
+      navigation.goBack();
+
+      // Then show success message on list screen
+      setTimeout(() => {
+        Alert.alert('Success', 'Installment plan created!');
+      }, 300);
     } catch (err) {
       Alert.alert('Error', err.response?.data?.error || 'Failed to create plan.');
     } finally {

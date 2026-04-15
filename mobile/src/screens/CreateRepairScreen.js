@@ -85,30 +85,36 @@ export default function CreateRepairScreen({ navigation }) {
       });
 
       const trackingUrl = res.data.tracking_url;
+      const jobId = res.data.job.job_id;
 
-      Alert.alert(
-        'Repair Job Created!',
-        'Job ID: ' + res.data.job.job_id + '\n\nShare tracking link with customer?',
-        [
-          { text: 'Done', onPress: () => navigation.goBack() },
-          {
-            text: 'Share Link',
-            onPress: async () => {
-              try {
-                await Share.share({
-                  message:
-                    'Track your repair at Mukesh Sport:\n' +
-                    trackingUrl +
-                    '\n\nJob ID: ' + res.data.job.job_id,
-                });
-              } catch (e) {
-                console.error(e);
-              }
-              navigation.goBack();
+      // Navigate back first so list refreshes immediately
+      navigation.goBack();
+
+      // Then show share prompt (appears on list screen)
+      setTimeout(() => {
+        Alert.alert(
+          'Repair Job Created!',
+          'Job ID: ' + jobId + '\n\nShare tracking link with customer?',
+          [
+            { text: 'Done' },
+            {
+              text: 'Share Link',
+              onPress: async () => {
+                try {
+                  await Share.share({
+                    message:
+                      'Track your repair at Mukesh Sport:\n' +
+                      trackingUrl +
+                      '\n\nJob ID: ' + jobId,
+                  });
+                } catch (e) {
+                  console.error(e);
+                }
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      }, 300);
     } catch (err) {
       Alert.alert('Error', err.response?.data?.error || 'Failed to create repair job.');
     } finally {
