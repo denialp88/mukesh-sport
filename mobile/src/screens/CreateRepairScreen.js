@@ -94,10 +94,15 @@ export default function CreateRepairScreen({ navigation }) {
       const customerPhone = selectedCustomer.phone.replace(/\D/g, '');
       const phone91 = customerPhone.startsWith('91') ? customerPhone : '91' + customerPhone;
       const message = encodeURIComponent(
-        'Mukesh Sport - Repair Update\n\n' +
-        'Job ID: ' + jobId + '\n' +
-        'Item: ' + itemName + '\n\n' +
-        'Track your repair status here:\n' + trackingUrl
+        '*Mukesh Sport* 🏏\n' +
+        '━━━━━━━━━━━━━━\n\n' +
+        '🔧 *Repair Job Created*\n\n' +
+        '📋 *Job ID:* ' + jobId + '\n' +
+        '🏷️ *Item:* ' + itemName + '\n\n' +
+        '👇 *Track your repair status:*\n\n' +
+        trackingUrl + '\n\n' +
+        '━━━━━━━━━━━━━━\n' +
+        'Thank you for choosing Mukesh Sport!'
       );
 
       setTimeout(() => {
