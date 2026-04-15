@@ -90,6 +90,13 @@ export default function CreateRepairScreen({ navigation }) {
       // Navigate back first so list refreshes immediately
       navigation.goBack();
 
+      // Shorten URL via TinyURL so WhatsApp makes it clickable
+      let shortUrl = trackingUrl;
+      try {
+        const tinyRes = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(trackingUrl));
+        if (tinyRes.ok) shortUrl = await tinyRes.text();
+      } catch (e) {}
+
       // Send tracking link via WhatsApp
       const customerPhone = selectedCustomer.phone.replace(/\D/g, '');
       const phone91 = customerPhone.startsWith('91') ? customerPhone : '91' + customerPhone;
@@ -100,7 +107,7 @@ export default function CreateRepairScreen({ navigation }) {
         '📋 *Job ID:* ' + jobId + '\n' +
         '🏷️ *Item:* ' + itemName + '\n\n' +
         '👇 *Track your repair status:*\n\n' +
-        trackingUrl + '\n\n' +
+        shortUrl + '\n\n' +
         '━━━━━━━━━━━━━━\n' +
         'Thank you for choosing Mukesh Sport!'
       );
