@@ -105,6 +105,30 @@ export default function RepairDetailScreen({ route }) {
                     },
                   ]
                 );
+              } else if (newStatus === 'delivered') {
+                Alert.alert(
+                  'Payment Status',
+                  'Is the payment received for this repair?',
+                  [
+                    {
+                      text: 'Not Yet',
+                      style: 'cancel',
+                      onPress: () => Alert.alert('Done', 'Marked as delivered. Payment pending.'),
+                    },
+                    {
+                      text: '✅ Yes, Received',
+                      onPress: async () => {
+                        try {
+                          await updateRepairStatus(jobId, { payment_received: true });
+                          fetchData();
+                          Alert.alert('Done', 'Marked as delivered & payment received!');
+                        } catch (e) {
+                          Alert.alert('Done', 'Marked as delivered. Could not update payment status.');
+                        }
+                      },
+                    },
+                  ]
+                );
               } else {
                 Alert.alert('Success', 'Status updated!');
               }

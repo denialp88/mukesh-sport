@@ -18,7 +18,7 @@ function generateJobId() {
 // GET /api/repairs — all repair jobs
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { status, search } = req.query;
+    const { status, search, from_date, to_date } = req.query;
     let query = db('repair_jobs')
       .join('customers', 'repair_jobs.customer_id', 'customers.id')
       .select(
@@ -29,6 +29,8 @@ router.get('/', authenticate, async (req, res) => {
       .orderBy('repair_jobs.created_at', 'desc');
 
     if (status) query = query.where('repair_jobs.status', status);
+    if (from_date) query = query.where('repair_jobs.received_date', '>=', from_date);
+    if (to_date) query = query.where('repair_jobs.received_date', '<=', to_date);
     if (search) {
       query = query.where(function () {
         this.where('repair_jobs.job_id', 'ilike', `%${search}%`)
@@ -129,7 +131,17 @@ router.post('/', authenticate, async (req, res) => {
 // PUT /api/repairs/:id/status — update repair status
 router.put('/:id/status', authenticate, async (req, res) => {
   try {
-    const { status, note, photo_url } = req.body;
+    const { status, note, photo_url, payment_received } = req.body;
+
+    // If only updating payment status (no status change)
+    if (payment_received !== undefined && !status) {
+      const [job] = await db('repair_jobs')
+        .where({ id: req.params.id })
+        .update({ payment_received, updated_at: db.fn.now() })
+        .returning('*');
+      if (!job) return res.status(404).json({ error: 'Repair job not found.' });
+      return res.json({ job });
+    }
 
     const validStatuses = ['received', 'in_progress', 'ready_for_pickup', 'delivered'];
     if (!validStatuses.includes(status)) {
@@ -141,6 +153,7 @@ router.put('/:id/status', authenticate, async (req, res) => {
     if (status === 'ready_for_pickup' || status === 'delivered') {
       updateData.completed_date = new Date().toISOString().split('T')[0];
     }
+    if (payment_received !== undefined) updateData.payment_received = payment_received;
 
     const [job] = await db('repair_jobs')
       .where({ id: req.params.id })

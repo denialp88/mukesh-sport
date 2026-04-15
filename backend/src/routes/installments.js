@@ -7,7 +7,7 @@ const router = express.Router();
 // GET /api/installments/plans — all plans
 router.get('/plans', authenticate, async (req, res) => {
   try {
-    const { status, customer_id } = req.query;
+    const { status, customer_id, from_date, to_date } = req.query;
     let query = db('installment_plans')
       .join('customers', 'installment_plans.customer_id', 'customers.id')
       .select(
@@ -19,6 +19,8 @@ router.get('/plans', authenticate, async (req, res) => {
 
     if (status) query = query.where('installment_plans.status', status);
     if (customer_id) query = query.where('installment_plans.customer_id', customer_id);
+    if (from_date) query = query.where('installment_plans.created_at', '>=', from_date);
+    if (to_date) query = query.where('installment_plans.created_at', '<=', to_date + 'T23:59:59');
 
     const plans = await query;
     res.json({ plans });
