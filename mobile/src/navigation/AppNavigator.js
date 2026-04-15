@@ -140,11 +140,23 @@ export default function AppNavigator() {
         name="InstallmentTab"
         component={InstallmentStackScreen}
         options={{ tabBarLabel: 'Installments' }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('InstallmentTab', { screen: 'InstallmentList' });
+          },
+        })}
       />
       <Tab.Screen
         name="RepairTab"
         component={RepairStackScreen}
         options={{ tabBarLabel: 'Repairs' }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('RepairTab', { screen: 'RepairList' });
+          },
+        })}
       />
     </Tab.Navigator>
   );

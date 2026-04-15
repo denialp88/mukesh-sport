@@ -54,7 +54,13 @@ export default function InstallmentListScreen({ navigation }) {
     return Colors.danger;
   };
 
-  const renderPlan = ({ item }) => (
+  const renderPlan = ({ item }) => {
+    const pending = parseFloat(item.remaining_balance);
+    const total = parseFloat(item.total_price);
+    const paid = total - pending;
+    const progress = total > 0 ? (paid / total) : 0;
+
+    return (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate('InstallmentDetail', { planId: item.id })}
@@ -69,7 +75,7 @@ export default function InstallmentListScreen({ navigation }) {
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
           <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-            {item.status.toUpperCase()}
+            {item.status === 'completed' ? 'PAID' : 'PENDING'}
           </Text>
         </View>
       </View>
@@ -77,24 +83,26 @@ export default function InstallmentListScreen({ navigation }) {
       <View style={styles.cardBody}>
         <View style={styles.infoCol}>
           <Text style={styles.infoLabel}>Total</Text>
-          <Text style={styles.infoValue}>₹{parseFloat(item.total_price).toLocaleString('en-IN')}</Text>
+          <Text style={styles.infoValue}>₹{total.toLocaleString('en-IN')}</Text>
         </View>
         <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>EMI</Text>
-          <Text style={styles.infoValue}>₹{parseFloat(item.installment_amount).toLocaleString('en-IN')}</Text>
+          <Text style={styles.infoLabel}>Paid</Text>
+          <Text style={[styles.infoValue, { color: Colors.success }]}>₹{paid.toLocaleString('en-IN')}</Text>
         </View>
         <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>Installments</Text>
-          <Text style={styles.infoValue}>{item.total_installments}</Text>
+          <Text style={styles.infoLabel}>Pending</Text>
+          <Text style={[styles.infoValue, { color: pending > 0 ? Colors.danger : Colors.success }]}>₹{pending.toLocaleString('en-IN')}</Text>
         </View>
       </View>
 
-      <View style={styles.cardFooter}>
-        <Text style={styles.frequency}>{item.frequency}</Text>
-        <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+      <View style={styles.progressRow}>
+        <View style={styles.progressBarBg}>
+          <View style={[styles.progressBarFill, { width: Math.min(progress * 100, 100) + '%' }]} />
+        </View>
+        <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
       </View>
     </TouchableOpacity>
-  );
+  )};
 
   return (
     <View style={styles.container}>
@@ -194,18 +202,25 @@ const styles = StyleSheet.create({
   infoCol: { flex: 1 },
   infoLabel: { fontSize: 11, color: Colors.textMuted },
   infoValue: { fontSize: 15, fontWeight: '700', color: Colors.text, marginTop: 2 },
-  cardFooter: {
+  progressRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 10,
+    gap: 8,
   },
-  frequency: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    textTransform: 'capitalize',
-    fontWeight: '600',
+  progressBarBg: {
+    flex: 1,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 2,
+    overflow: 'hidden',
   },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 2,
+  },
+  progressText: { fontSize: 11, fontWeight: '700', color: Colors.primary, width: 32, textAlign: 'right' },
   fab: {
     position: 'absolute',
     bottom: 28,

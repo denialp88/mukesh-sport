@@ -25,14 +25,11 @@ export default function CreateInstallmentScreen({ navigation }) {
   const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', address: '' });
   const [showNewForm, setShowNewForm] = useState(false);
 
-  // Plan
+  // Credit Details
   const [productName, setProductName] = useState('');
-  const [category, setCategory] = useState('');
-  const [brand, setBrand] = useState('');
   const [totalPrice, setTotalPrice] = useState('');
-  const [downPayment, setDownPayment] = useState('0');
-  const [totalInstallments, setTotalInstallments] = useState('');
-  const [frequency, setFrequency] = useState('monthly');
+  const [downPayment, setDownPayment] = useState('');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     fetchCustomers();
@@ -63,47 +60,33 @@ export default function CreateInstallmentScreen({ navigation }) {
   };
 
   const handleSubmit = async () => {
-    if (!productName || !totalPrice || !totalInstallments) {
-      Alert.alert('Error', 'Product name, total price, and installments are required.');
+    if (!productName || !totalPrice) {
+      Alert.alert('Error', 'Product name and total price are required.');
       return;
     }
     setLoading(true);
     try {
-      const startDate = new Date();
-      if (frequency === 'monthly') {
-        startDate.setMonth(startDate.getMonth() + 1);
-      } else {
-        startDate.setDate(startDate.getDate() + 7);
-      }
-
       await createInstallmentPlan({
         customer_id: selectedCustomer.id,
         product_name: productName,
-        category,
-        brand,
         total_price: parseFloat(totalPrice),
         down_payment: parseFloat(downPayment) || 0,
-        total_installments: parseInt(totalInstallments),
-        frequency,
-        start_date: startDate.toISOString().split('T')[0],
+        notes,
       });
 
-      // Navigate back first so list refreshes immediately
       navigation.goBack();
-
-      // Then show success message on list screen
       setTimeout(() => {
-        Alert.alert('Success', 'Installment plan created!');
+        Alert.alert('Success', 'Credit entry created!');
       }, 300);
     } catch (err) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to create plan.');
+      Alert.alert('Error', err.response?.data?.error || 'Failed to create entry.');
     } finally {
       setLoading(false);
     }
   };
 
-  const emi = totalPrice && totalInstallments
-    ? ((parseFloat(totalPrice) - (parseFloat(downPayment) || 0)) / parseInt(totalInstallments)).toFixed(2)
+  const pending = totalPrice
+    ? (parseFloat(totalPrice) - (parseFloat(downPayment) || 0)).toFixed(2)
     : '0';
 
   return (
@@ -194,37 +177,23 @@ export default function CreateInstallmentScreen({ navigation }) {
               </View>
             )}
 
-            <InputField label="Product Name *" value={productName} onChangeText={setProductName} placeholder="e.g. Cricket Bat, Treadmill" />
-            <InputField label="Category" value={category} onChangeText={setCategory} placeholder="e.g. Cricket, Gym" />
-            <InputField label="Brand" value={brand} onChangeText={setBrand} placeholder="e.g. SG, MRF" />
-            <InputField label="Total Price (Rs.) *" value={totalPrice} onChangeText={setTotalPrice} keyboardType="numeric" />
-            <InputField label="Down Payment (Rs.)" value={downPayment} onChangeText={setDownPayment} keyboardType="numeric" />
-            <InputField label="Number of Installments *" value={totalInstallments} onChangeText={setTotalInstallments} keyboardType="numeric" />
+            <InputField label="Product / Item Name *" value={productName} onChangeText={setProductName} placeholder="e.g. Cricket Bat, Treadmill" />
+            <InputField label="Total Price (Rs.) *" value={totalPrice} onChangeText={setTotalPrice} keyboardType="numeric" placeholder="e.g. 10000" />
+            <InputField label="Amount Paid Now (Rs.)" value={downPayment} onChangeText={setDownPayment} keyboardType="numeric" placeholder="e.g. 2000" />
+            <InputField label="Notes" value={notes} onChangeText={setNotes} placeholder="Any notes about this credit..." />
 
-            {/* Frequency selector */}
-            <Text style={styles.fieldLabel}>Frequency</Text>
-            <View style={styles.freqRow}>
-              {['monthly', 'weekly'].map((f) => (
-                <TouchableOpacity
-                  key={f}
-                  style={[styles.freqBtn, frequency === f && styles.freqBtnActive]}
-                  onPress={() => setFrequency(f)}
-                >
-                  <Text style={[styles.freqText, frequency === f && styles.freqTextActive]}>
-                    {f.charAt(0).toUpperCase() + f.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* EMI Preview */}
-            {totalPrice && totalInstallments ? (
+            {/* Pending Preview */}
+            {totalPrice ? (
               <View style={styles.emiBox}>
-                <Text style={styles.emiLabel}>Calculated EMI</Text>
-                <Text style={styles.emiValue}>Rs. {parseFloat(emi).toLocaleString('en-IN')}</Text>
-                <Text style={styles.emiSub}>
-                  {totalInstallments} x {frequency} installments
+                <Text style={styles.emiLabel}>Pending Amount</Text>
+                <Text style={[styles.emiValue, { color: parseFloat(pending) > 0 ? Colors.danger : Colors.success }]}>
+                  Rs. {parseFloat(pending).toLocaleString('en-IN')}
                 </Text>
+                {parseFloat(downPayment) > 0 ? (
+                  <Text style={styles.emiSub}>
+                    Paid Rs. {parseFloat(downPayment).toLocaleString('en-IN')} of Rs. {parseFloat(totalPrice).toLocaleString('en-IN')}
+                  </Text>
+                ) : null}
               </View>
             ) : null}
 
@@ -233,7 +202,7 @@ export default function CreateInstallmentScreen({ navigation }) {
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.submitBtnText}>Create Installment Plan</Text>
+                  <Text style={styles.submitBtnText}>Create Credit Entry</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>

@@ -29,10 +29,11 @@ export const getCustomer = (id) => api.get(`/customers/${id}`);
 export const createCustomer = (data) => api.post('/customers', data);
 export const updateCustomer = (id, data) => api.put(`/customers/${id}`, data);
 
-// Installments
+// Installments / Credit Tracker
 export const getInstallmentPlans = (params) => api.get('/installments/plans', { params });
 export const getInstallmentPlan = (id) => api.get(`/installments/plans/${id}`);
 export const createInstallmentPlan = (data) => api.post('/installments/plans', data);
+export const addPayment = (planId, data) => api.post(`/installments/plans/${planId}/add-payment`, data);
 export const payInstallment = (id, data) => api.put(`/installments/${id}/pay`, data);
 export const getInstallmentDashboard = () => api.get('/installments/dashboard/summary');
 

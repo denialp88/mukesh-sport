@@ -71,15 +71,17 @@ router.post('/plans', authenticate, async (req, res) => {
       notes,
     } = req.body;
 
-    if (!customer_id || !product_name || !total_price || !total_installments || !start_date) {
+    if (!customer_id || !product_name || !total_price) {
       return res.status(400).json({
-        error: 'customer_id, product_name, total_price, total_installments, and start_date are required.',
+        error: 'customer_id, product_name, and total_price are required.',
       });
     }
 
     const dp = parseFloat(down_payment) || 0;
     const remaining = parseFloat(total_price) - dp;
-    const emiAmount = parseFloat((remaining / parseInt(total_installments)).toFixed(2));
+    const numInstallments = parseInt(total_installments) || 1;
+    const emiAmount = parseFloat((remaining / numInstallments).toFixed(2));
+    const planStartDate = start_date || new Date().toISOString().split('T')[0];
 
     const [plan] = await db('installment_plans')
       .insert({
@@ -92,44 +94,69 @@ router.post('/plans', authenticate, async (req, res) => {
         total_price,
         down_payment: dp,
         remaining_balance: remaining,
-        total_installments,
+        total_installments: numInstallments,
         installment_amount: emiAmount,
-        frequency: frequency || 'monthly',
-        start_date,
+        frequency: frequency || 'custom',
+        start_date: planStartDate,
         notes,
       })
       .returning('*');
 
-    // Auto-generate installment rows
-    const installmentRows = [];
-    const start = new Date(start_date);
-
-    for (let i = 0; i < total_installments; i++) {
-      const dueDate = new Date(start);
-      if (frequency === 'weekly') {
-        dueDate.setDate(dueDate.getDate() + i * 7);
-      } else {
-        dueDate.setMonth(dueDate.getMonth() + i);
-      }
-
-      installmentRows.push({
-        plan_id: plan.id,
-        installment_number: i + 1,
-        amount: emiAmount,
-        due_date: dueDate.toISOString().split('T')[0],
-        status: 'pending',
-      });
-    }
-
-    await db('installments').insert(installmentRows);
-
-    const installments = await db('installments')
-      .where({ plan_id: plan.id })
-      .orderBy('installment_number', 'asc');
-
-    res.status(201).json({ plan, installments });
+    res.status(201).json({ plan });
   } catch (err) {
     console.error('Create plan error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// POST /api/installments/plans/:id/add-payment — add any amount payment
+router.post('/plans/:id/add-payment', authenticate, async (req, res) => {
+  try {
+    const { amount, payment_mode, note } = req.body;
+
+    if (!amount || parseFloat(amount) <= 0) {
+      return res.status(400).json({ error: 'A valid payment amount is required.' });
+    }
+
+    const plan = await db('installment_plans').where({ id: req.params.id }).first();
+    if (!plan) return res.status(404).json({ error: 'Plan not found.' });
+
+    const paymentAmount = parseFloat(amount);
+    const newBalance = Math.max(0, parseFloat(plan.remaining_balance) - paymentAmount);
+
+    // Get next installment number
+    const lastPayment = await db('installments')
+      .where({ plan_id: plan.id })
+      .orderBy('installment_number', 'desc')
+      .first();
+    const nextNum = lastPayment ? lastPayment.installment_number + 1 : 1;
+
+    // Record the payment
+    const [payment] = await db('installments')
+      .insert({
+        plan_id: plan.id,
+        installment_number: nextNum,
+        amount: paymentAmount,
+        due_date: new Date().toISOString().split('T')[0],
+        paid_date: new Date().toISOString().split('T')[0],
+        paid_amount: paymentAmount,
+        payment_mode: payment_mode || 'cash',
+        status: 'paid',
+        receipt_note: note,
+      })
+      .returning('*');
+
+    // Update plan balance
+    const updateData = { remaining_balance: newBalance, updated_at: db.fn.now() };
+    if (newBalance === 0) updateData.status = 'completed';
+
+    await db('installment_plans').where({ id: plan.id }).update(updateData);
+
+    const updatedPlan = await db('installment_plans').where({ id: plan.id }).first();
+
+    res.json({ payment, plan: updatedPlan });
+  } catch (err) {
+    console.error('Add payment error:', err);
     res.status(500).json({ error: 'Server error.' });
   }
 });
