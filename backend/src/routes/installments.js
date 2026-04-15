@@ -201,60 +201,38 @@ router.put('/:id/pay', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/installments/dashboard — today, overdue, upcoming
+// GET /api/installments/dashboard — credit summary
 router.get('/dashboard/summary', authenticate, async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    // Total pending balance across all active plans
+    const pendingResult = await db('installment_plans')
+      .where('status', 'active')
+      .sum('remaining_balance as total_pending')
+      .first();
 
-    const todayDue = await db('installments')
-      .join('installment_plans', 'installments.plan_id', 'installment_plans.id')
-      .join('customers', 'installment_plans.customer_id', 'customers.id')
-      .select(
-        'installments.*',
-        'installment_plans.product_name',
-        'customers.name as customer_name',
-        'customers.phone as customer_phone'
-      )
-      .where('installments.due_date', today)
-      .where('installments.status', 'pending');
+    // Total credit (total_price) across all active plans
+    const creditResult = await db('installment_plans')
+      .where('status', 'active')
+      .sum('total_price as total_credit')
+      .first();
 
-    const overdue = await db('installments')
-      .join('installment_plans', 'installments.plan_id', 'installment_plans.id')
-      .join('customers', 'installment_plans.customer_id', 'customers.id')
-      .select(
-        'installments.*',
-        'installment_plans.product_name',
-        'customers.name as customer_name',
-        'customers.phone as customer_phone'
-      )
-      .where('installments.due_date', '<', today)
-      .where('installments.status', 'pending');
+    // Count of active entries
+    const countResult = await db('installment_plans')
+      .where('status', 'active')
+      .count('id as active_count')
+      .first();
 
-    const upcoming = await db('installments')
-      .join('installment_plans', 'installments.plan_id', 'installment_plans.id')
-      .join('customers', 'installment_plans.customer_id', 'customers.id')
-      .select(
-        'installments.*',
-        'installment_plans.product_name',
-        'customers.name as customer_name',
-        'customers.phone as customer_phone'
-      )
-      .where('installments.due_date', '>', today)
-      .where('installments.due_date', '<=', db.raw(`DATE '${today}' + INTERVAL '7 days'`))
-      .where('installments.status', 'pending');
+    // Count of completed entries
+    const completedResult = await db('installment_plans')
+      .where('status', 'completed')
+      .count('id as completed_count')
+      .first();
 
     res.json({
-      today_due: todayDue,
-      overdue,
-      upcoming,
-      summary: {
-        today_count: todayDue.length,
-        today_amount: todayDue.reduce((sum, i) => sum + parseFloat(i.amount), 0),
-        overdue_count: overdue.length,
-        overdue_amount: overdue.reduce((sum, i) => sum + parseFloat(i.amount), 0),
-        upcoming_count: upcoming.length,
-        upcoming_amount: upcoming.reduce((sum, i) => sum + parseFloat(i.amount), 0),
-      },
+      total_pending: parseFloat(pendingResult.total_pending) || 0,
+      total_credit: parseFloat(creditResult.total_credit) || 0,
+      active_count: parseInt(countResult.active_count) || 0,
+      completed_count: parseInt(completedResult.completed_count) || 0,
     });
   } catch (err) {
     console.error('Dashboard summary error:', err);

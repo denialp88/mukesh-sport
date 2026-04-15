@@ -48,17 +48,17 @@ function InstallmentStackScreen() {
       <InstallmentStack.Screen
         name="InstallmentList"
         component={InstallmentListScreen}
-        options={{ title: 'Installments' }}
+        options={{ title: 'Credit Entries' }}
       />
       <InstallmentStack.Screen
         name="InstallmentDetail"
         component={InstallmentDetailScreen}
-        options={{ title: 'Plan Details' }}
+        options={{ title: 'Credit Details' }}
       />
       <InstallmentStack.Screen
         name="CreateInstallment"
         component={CreateInstallmentScreen}
-        options={{ title: 'New Installment Plan' }}
+        options={{ title: 'New Credit Entry' }}
       />
     </InstallmentStack.Navigator>
   );
@@ -139,7 +139,7 @@ export default function AppNavigator() {
       <Tab.Screen
         name="InstallmentTab"
         component={InstallmentStackScreen}
-        options={{ tabBarLabel: 'Installments' }}
+        options={{ tabBarLabel: 'Credit' }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault();

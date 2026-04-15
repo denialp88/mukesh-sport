@@ -16,7 +16,6 @@ import { getInstallmentDashboard, getRepairDashboard } from '../services/api';
 import { Colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
-const cardW = (width - 48 - 12) / 3;
 
 export default function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();
@@ -48,8 +47,6 @@ export default function DashboardScreen({ navigation }) {
     await fetchData();
     setRefreshing(false);
   };
-
-  const summary = installmentData?.summary || {};
 
   return (
     <View style={styles.container}>
@@ -100,7 +97,7 @@ export default function DashboardScreen({ navigation }) {
                 </View>
                 <View>
                   <Text style={styles.quickBtnLabel}>New</Text>
-                  <Text style={styles.quickBtnTitle}>Installment</Text>
+                  <Text style={styles.quickBtnTitle}>Credit</Text>
                 </View>
                 <Ionicons name="arrow-forward-circle" size={22} color="rgba(255,255,255,0.5)" />
               </LinearGradient>
@@ -129,16 +126,16 @@ export default function DashboardScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Installments Section */}
+          {/* Credit Entries Section */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Installments</Text>
+            <Text style={styles.sectionTitle}>Credit Entries</Text>
             <TouchableOpacity onPress={() => navigation.navigate('InstallmentTab')}>
               <Text style={styles.sectionLink}>View all</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.statRow}>
-            {/* Overdue */}
+            {/* Total Pending */}
             <TouchableOpacity
               style={styles.statCard}
               onPress={() => navigation.navigate('InstallmentTab')}
@@ -149,17 +146,14 @@ export default function DashboardScreen({ navigation }) {
                 style={styles.statCardInner}
               >
                 <View style={[styles.statIconWrap, { backgroundColor: 'rgba(248,113,113,0.15)' }]}>
-                  <Ionicons name="warning" size={16} color={Colors.danger} />
+                  <Ionicons name="cash-outline" size={16} color={Colors.danger} />
                 </View>
-                <Text style={styles.statNumber}>{summary.overdue_count || 0}</Text>
-                <Text style={styles.statLabel}>Overdue</Text>
-                <Text style={[styles.statAmount, { color: Colors.danger }]}>
-                  {'Rs.' + (summary.overdue_amount || 0).toLocaleString('en-IN')}
-                </Text>
+                <Text style={styles.statAmount}>{'Rs.' + (installmentData?.total_pending || 0).toLocaleString('en-IN')}</Text>
+                <Text style={styles.statLabel}>Pending</Text>
               </LinearGradient>
             </TouchableOpacity>
 
-            {/* Due Today */}
+            {/* Total Credit */}
             <TouchableOpacity
               style={styles.statCard}
               onPress={() => navigation.navigate('InstallmentTab')}
@@ -170,17 +164,14 @@ export default function DashboardScreen({ navigation }) {
                 style={styles.statCardInner}
               >
                 <View style={[styles.statIconWrap, { backgroundColor: 'rgba(251,191,36,0.15)' }]}>
-                  <Ionicons name="today" size={16} color={Colors.warning} />
+                  <Ionicons name="wallet" size={16} color={Colors.warning} />
                 </View>
-                <Text style={styles.statNumber}>{summary.today_count || 0}</Text>
-                <Text style={styles.statLabel}>Due Today</Text>
-                <Text style={[styles.statAmount, { color: Colors.warning }]}>
-                  {'Rs.' + (summary.today_amount || 0).toLocaleString('en-IN')}
-                </Text>
+                <Text style={styles.statAmount}>{'Rs.' + (installmentData?.total_credit || 0).toLocaleString('en-IN')}</Text>
+                <Text style={styles.statLabel}>Total Credit</Text>
               </LinearGradient>
             </TouchableOpacity>
 
-            {/* Upcoming */}
+            {/* Active Entries */}
             <TouchableOpacity
               style={styles.statCard}
               onPress={() => navigation.navigate('InstallmentTab')}
@@ -191,13 +182,10 @@ export default function DashboardScreen({ navigation }) {
                 style={styles.statCardInner}
               >
                 <View style={[styles.statIconWrap, { backgroundColor: 'rgba(96,165,250,0.15)' }]}>
-                  <Ionicons name="calendar" size={16} color={Colors.info} />
+                  <Ionicons name="document-text" size={16} color={Colors.info} />
                 </View>
-                <Text style={styles.statNumber}>{summary.upcoming_count || 0}</Text>
-                <Text style={styles.statLabel}>Upcoming</Text>
-                <Text style={[styles.statAmount, { color: Colors.info }]}>
-                  {'Rs.' + (summary.upcoming_amount || 0).toLocaleString('en-IN')}
-                </Text>
+                <Text style={styles.statNumber}>{installmentData?.active_count || 0}</Text>
+                <Text style={styles.statLabel}>Active</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
