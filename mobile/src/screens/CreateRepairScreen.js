@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Share,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -90,26 +90,26 @@ export default function CreateRepairScreen({ navigation }) {
       // Navigate back first so list refreshes immediately
       navigation.goBack();
 
-      // Then show share prompt (appears on list screen)
+      // Send tracking link via WhatsApp
+      const customerPhone = selectedCustomer.phone.replace(/\D/g, '');
+      const phone91 = customerPhone.startsWith('91') ? customerPhone : '91' + customerPhone;
+      const message = encodeURIComponent(
+        'Mukesh Sport - Repair Update\n\n' +
+        'Job ID: ' + jobId + '\n' +
+        'Item: ' + itemName + '\n\n' +
+        'Track your repair status here:\n' + trackingUrl
+      );
+
       setTimeout(() => {
         Alert.alert(
           'Repair Job Created!',
-          'Job ID: ' + jobId + '\n\nShare tracking link with customer?',
+          'Job ID: ' + jobId,
           [
             { text: 'Done' },
             {
-              text: 'Share Link',
-              onPress: async () => {
-                try {
-                  await Share.share({
-                    message:
-                      'Track your repair at Mukesh Sport:\n' +
-                      trackingUrl +
-                      '\n\nJob ID: ' + jobId,
-                  });
-                } catch (e) {
-                  console.error(e);
-                }
+              text: 'Send on WhatsApp',
+              onPress: () => {
+                Linking.openURL('https://wa.me/' + phone91 + '?text=' + message);
               },
             },
           ]

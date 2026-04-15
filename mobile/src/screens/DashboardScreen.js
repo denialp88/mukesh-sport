@@ -148,8 +148,8 @@ export default function DashboardScreen({ navigation }) {
                 <View style={[styles.statIconWrap, { backgroundColor: 'rgba(248,113,113,0.15)' }]}>
                   <Ionicons name="cash-outline" size={16} color={Colors.danger} />
                 </View>
-                <Text style={styles.statAmount}>{'Rs.' + (installmentData?.total_pending || 0).toLocaleString('en-IN')}</Text>
-                <Text style={styles.statLabel}>Pending</Text>
+                <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>{(installmentData?.total_pending || 0).toLocaleString('en-IN')}</Text>
+                <Text style={styles.statLabel}>₹ Pending</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -166,8 +166,8 @@ export default function DashboardScreen({ navigation }) {
                 <View style={[styles.statIconWrap, { backgroundColor: 'rgba(251,191,36,0.15)' }]}>
                   <Ionicons name="wallet" size={16} color={Colors.warning} />
                 </View>
-                <Text style={styles.statAmount}>{'Rs.' + (installmentData?.total_credit || 0).toLocaleString('en-IN')}</Text>
-                <Text style={styles.statLabel}>Total Credit</Text>
+                <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>{(installmentData?.total_credit || 0).toLocaleString('en-IN')}</Text>
+                <Text style={styles.statLabel}>₹ Credit</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -404,9 +404,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   statNumber: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: '800',
     color: Colors.text,
+    minWidth: 50,
+    textAlign: 'center',
   },
   statLabel: {
     fontSize: 11,

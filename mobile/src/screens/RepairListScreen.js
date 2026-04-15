@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   TextInput,
   RefreshControl,
@@ -113,14 +114,10 @@ export default function RepairListScreen({ navigation }) {
       </View>
 
       {/* Filter Tabs */}
-      <FlatList
-        data={STATUS_FILTERS}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.key}
-        contentContainerStyle={styles.filterList}
-        renderItem={({ item: f }) => (
+      <View style={styles.filterRow}>
+        {STATUS_FILTERS.map((f) => (
           <TouchableOpacity
+            key={f.key}
             style={[styles.filterTab, filter === f.key && styles.filterTabActive]}
             onPress={() => setFilter(f.key)}
           >
@@ -128,8 +125,8 @@ export default function RepairListScreen({ navigation }) {
               {f.label}
             </Text>
           </TouchableOpacity>
-        )}
-      />
+        ))}
+      </View>
 
       <FlatList
         data={jobs}
@@ -173,22 +170,23 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   searchInput: { flex: 1, fontSize: 14, color: Colors.text, marginLeft: 10 },
-  filterList: { paddingHorizontal: 18, paddingVertical: 10, gap: 8 },
-  filterTab: {
-    paddingHorizontal: 16,
+  filterRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: Colors.border,
-    marginRight: 8,
+  },
+  filterTab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 7,
+    borderRadius: 8,
+    marginHorizontal: 3,
   },
   filterTabActive: {
-    backgroundColor: Colors.accent + '18',
-    borderColor: Colors.accent + '50',
+    backgroundColor: Colors.accent,
   },
-  filterText: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600', letterSpacing: 0.2 },
-  filterTextActive: { color: Colors.accent },
+  filterText: { fontSize: 12, color: Colors.textMuted, fontWeight: '600' },
+  filterTextActive: { color: '#fff' },
   listContent: { paddingHorizontal: 18, paddingBottom: 100 },
   card: {
     backgroundColor: 'rgba(255,255,255,0.03)',
@@ -247,6 +245,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 10,
   },
-  emptyState: { alignItems: 'center', paddingTop: 80 },
+  emptyState: { alignItems: 'center', paddingTop: 60, flex: 1 },
   emptyText: { fontSize: 15, color: Colors.textMuted, marginTop: 12 },
 });
