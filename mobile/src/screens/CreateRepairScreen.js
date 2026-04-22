@@ -90,12 +90,8 @@ export default function CreateRepairScreen({ navigation }) {
       // Navigate back first so list refreshes immediately
       navigation.goBack();
 
-      // Shorten URL via TinyURL so WhatsApp makes it clickable
-      let shortUrl = trackingUrl;
-      try {
-        const tinyRes = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(trackingUrl));
-        if (tinyRes.ok) shortUrl = await tinyRes.text();
-      } catch (e) {}
+      // Use short redirect URL (no underscores, WhatsApp links it properly)
+      const shortUrl = 'http://54.82.92.185/r/' + jobId;
 
       // Send tracking link via WhatsApp
       const customerPhone = selectedCustomer.phone.replace(/\D/g, '');

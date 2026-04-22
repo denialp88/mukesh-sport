@@ -60,13 +60,7 @@ export default function RepairDetailScreen({ route }) {
     Linking.openURL('https://wa.me/' + phone91 + '?text=' + msg);
   };
 
-  const shortenUrl = async (url) => {
-    try {
-      const res = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url));
-      if (res.ok) return await res.text();
-    } catch (e) {}
-    return url;
-  };
+  const getTrackUrl = () => 'http://54.82.92.185/r/' + (job?.job_id || '');
 
   const handleStatusUpdate = (newStatus) => {
     Alert.alert(
@@ -82,7 +76,7 @@ export default function RepairDetailScreen({ route }) {
               fetchData();
 
               if (newStatus === 'ready_for_pickup' && job?.customer_phone) {
-                const trackUrl = await shortenUrl('http://54.82.92.185/track/' + job.tracking_token);
+                const trackUrl = getTrackUrl();
                 Alert.alert(
                   'Status Updated!',
                   'Notify customer on WhatsApp?',
@@ -143,7 +137,7 @@ export default function RepairDetailScreen({ route }) {
 
   const handleShare = async () => {
     if (!job) return;
-    const trackUrl = await shortenUrl('http://54.82.92.185/track/' + job.tracking_token);
+    const trackUrl = getTrackUrl();
     const msg =
       '*Mukesh Sport* 🏏\n' +
       '━━━━━━━━━━━━━━\n\n' +

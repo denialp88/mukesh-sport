@@ -31,6 +31,21 @@ app.use('/api/repairs', repairRoutes);
 // Public tracking page (no auth)
 app.use('/track', trackingRoutes);
 
+// Short redirect: /r/JOB_ID → /track/TOKEN (WhatsApp-friendly)
+const db = require('./db/db');
+app.get('/r/:jobId', async (req, res) => {
+  try {
+    const job = await db('repair_jobs')
+      .select('tracking_token')
+      .where('job_id', req.params.jobId)
+      .first();
+    if (job) return res.redirect('/track/' + job.tracking_token);
+    res.status(404).send('Not found');
+  } catch (e) {
+    res.status(500).send('Error');
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', app: 'Mukesh Sport API', version: '1.0.0' });
