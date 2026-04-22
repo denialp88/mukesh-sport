@@ -90,8 +90,8 @@ export default function CreateRepairScreen({ navigation }) {
       // Navigate back first so list refreshes immediately
       navigation.goBack();
 
-      // Use short redirect URL (no underscores, WhatsApp links it properly)
-      const shortUrl = 'http://54.82.92.185/r/' + jobId;
+      // Use nip.io domain so WhatsApp makes the full URL clickable
+      const shortUrl = 'http://54-82-92-185.nip.io/r/' + jobId;
 
       // Send tracking link via WhatsApp
       const customerPhone = selectedCustomer.phone.replace(/\D/g, '');

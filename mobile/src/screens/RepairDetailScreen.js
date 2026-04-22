@@ -60,7 +60,7 @@ export default function RepairDetailScreen({ route }) {
     Linking.openURL('https://wa.me/' + phone91 + '?text=' + msg);
   };
 
-  const getTrackUrl = () => 'http://54.82.92.185/r/' + (job?.job_id || '');
+  const getTrackUrl = () => 'http://54-82-92-185.nip.io/r/' + (job?.job_id || '');
 
   const handleStatusUpdate = (newStatus) => {
     Alert.alert(

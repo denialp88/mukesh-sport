@@ -12,7 +12,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+let DateTimePicker = null;
+if (Platform.OS !== 'web') {
+  DateTimePicker = require('@react-native-community/datetimepicker').default;
+}
 import { getRepairJobs } from '../services/api';
 import { Colors } from '../theme/colors';
 
@@ -187,18 +190,40 @@ export default function RepairListScreen({ navigation }) {
       </View>
       {showDateRow && (
         <View style={styles.customDateRow}>
-          <TouchableOpacity style={styles.datePickerBtn} onPress={() => { setPickerField('from'); setPickerDate(fromDate ? new Date(fromDate) : new Date()); }}>
-            <Ionicons name="calendar-outline" size={14} color={Colors.textMuted} />
-            <Text style={styles.datePickerText}>{fromDate || 'From'}</Text>
-          </TouchableOpacity>
-          <Text style={{ color: Colors.textMuted }}>—</Text>
-          <TouchableOpacity style={styles.datePickerBtn} onPress={() => { setPickerField('to'); setPickerDate(toDate ? new Date(toDate) : new Date()); }}>
-            <Ionicons name="calendar-outline" size={14} color={Colors.textMuted} />
-            <Text style={styles.datePickerText}>{toDate || 'To'}</Text>
-          </TouchableOpacity>
+          {Platform.OS === 'web' ? (
+            <>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px', color: '#94a3b8', fontSize: 13 }}
+                placeholder="From"
+              />
+              <Text style={{ color: Colors.textMuted, marginHorizontal: 8 }}>—</Text>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px', color: '#94a3b8', fontSize: 13 }}
+                placeholder="To"
+              />
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={styles.datePickerBtn} onPress={() => { setPickerField('from'); setPickerDate(fromDate ? new Date(fromDate) : new Date()); }}>
+                <Ionicons name="calendar-outline" size={14} color={Colors.textMuted} />
+                <Text style={styles.datePickerText}>{fromDate || 'From'}</Text>
+              </TouchableOpacity>
+              <Text style={{ color: Colors.textMuted }}>—</Text>
+              <TouchableOpacity style={styles.datePickerBtn} onPress={() => { setPickerField('to'); setPickerDate(toDate ? new Date(toDate) : new Date()); }}>
+                <Ionicons name="calendar-outline" size={14} color={Colors.textMuted} />
+                <Text style={styles.datePickerText}>{toDate || 'To'}</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       )}
-      {pickerField && (
+      {pickerField && DateTimePicker && (
         <DateTimePicker
           value={pickerDate}
           mode="date"
