@@ -46,8 +46,10 @@ router.get('/plans/:id', authenticate, async (req, res) => {
     if (!plan) return res.status(404).json({ error: 'Plan not found.' });
 
     const installments = await db('installments')
+      .leftJoin('users', 'installments.recorded_by', 'users.id')
+      .select('installments.*', 'users.name as recorded_by_name', 'users.phone as recorded_by_phone')
       .where({ plan_id: req.params.id })
-      .orderBy('installment_number', 'asc');
+      .orderBy('installments.installment_number', 'asc');
 
     res.json({ plan, installments });
   } catch (err) {
@@ -145,6 +147,7 @@ router.post('/plans/:id/add-payment', authenticate, async (req, res) => {
         payment_mode: payment_mode || 'cash',
         status: 'paid',
         receipt_note: note,
+        recorded_by: req.user.id,
       })
       .returning('*');
 

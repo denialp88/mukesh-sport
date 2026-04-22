@@ -176,6 +176,9 @@ export default function InstallmentDetailScreen({ route, navigation }) {
                   {p.payment_mode && (
                     <Text style={styles.instPaidInfo}>via {p.payment_mode.toUpperCase()}</Text>
                   )}
+                  {p.recorded_by_name ? (
+                    <Text style={styles.instRecordedBy}>by {p.recorded_by_name}{p.recorded_by_phone ? ' (' + p.recorded_by_phone + ')' : ''}</Text>
+                  ) : null}
                   {p.receipt_note ? <Text style={styles.instPaidInfo}>{p.receipt_note}</Text> : null}
                 </View>
               </View>
@@ -343,6 +346,7 @@ const styles = StyleSheet.create({
   instNumber: { fontSize: 14, fontWeight: '600', color: Colors.text },
   instDate: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   instPaidInfo: { fontSize: 11, color: Colors.textMuted, marginTop: 1 },
+  instRecordedBy: { fontSize: 11, color: Colors.primary, marginTop: 2, fontWeight: '500' },
   instAmount: { fontSize: 15, fontWeight: '700' },
   emptyText: { fontSize: 14, color: Colors.textMuted, textAlign: 'center', marginTop: 20 },
   // Modal

@@ -8,6 +8,7 @@ import {
   Alert,
   RefreshControl,
   Linking,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,7 +63,43 @@ export default function RepairDetailScreen({ route }) {
 
   const getTrackUrl = () => 'http://54-82-92-185.nip.io/r/' + (job?.job_id || '');
 
-  const handleStatusUpdate = (newStatus) => {
+  const webConfirm = (msg) => Platform.OS === 'web' ? window.confirm(msg) : true;
+  const webAlert = (msg) => Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Info', msg);
+
+  const handleStatusUpdate = async (newStatus) => {
+    if (Platform.OS === 'web') {
+      if (!window.confirm('Change status to "' + STATUS_LABELS[newStatus] + '"?')) return;
+      try {
+        await updateRepairStatus(jobId, { status: newStatus });
+        fetchData();
+        if (newStatus === 'ready_for_pickup' && job?.customer_phone) {
+          const trackUrl = getTrackUrl();
+          if (window.confirm('Status Updated! Notify customer on WhatsApp?')) {
+            sendWhatsApp(job.customer_phone,
+              '*Mukesh Sport* 🏏\n━━━━━━━━━━━━━━\n\n✅ *Your item is Ready for Pickup!*\n\n📋 *Job ID:* ' + job.job_id + '\n🏷️ *Item:* ' + job.item_name + '\n\n📍 Please visit our store to collect your item.\n\n👇 *Track status:*\n\n' + trackUrl + '\n\n━━━━━━━━━━━━━━\nThank you for choosing Mukesh Sport!'
+            );
+          }
+        } else if (newStatus === 'delivered') {
+          if (window.confirm('Is the payment received for this repair?')) {
+            try {
+              await updateRepairStatus(jobId, { payment_received: true });
+              fetchData();
+              window.alert('Marked as delivered & payment received!');
+            } catch (e) {
+              window.alert('Marked as delivered. Could not update payment status.');
+            }
+          } else {
+            window.alert('Marked as delivered. Payment pending.');
+          }
+        } else {
+          window.alert('Status updated!');
+        }
+      } catch (err) {
+        window.alert('Failed to update status.');
+      }
+      return;
+    }
+
     Alert.alert(
       'Update Status',
       'Change status to "' + STATUS_LABELS[newStatus] + '"?',
