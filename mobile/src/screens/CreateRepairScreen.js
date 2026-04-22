@@ -90,8 +90,8 @@ export default function CreateRepairScreen({ navigation }) {
       // Navigate back first so list refreshes immediately
       navigation.goBack();
 
-      // Use nip.io domain so WhatsApp makes the full URL clickable
-      const shortUrl = 'http://54-82-92-185.nip.io/r/' + jobId;
+      // Use domain for WhatsApp clickable link
+      const shortUrl = 'https://mukeshsports.in/r/' + jobId;
 
       // Send tracking link via WhatsApp
       const customerPhone = selectedCustomer.phone.replace(/\D/g, '');

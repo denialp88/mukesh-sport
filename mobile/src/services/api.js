@@ -2,8 +2,8 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import { getItem } from './storage';
 
-// Production EC2 server
-const API_URL = 'http://54.82.92.185/api';
+// Production server
+const API_URL = 'https://mukeshsports.in/api';
 
 const api = axios.create({
   baseURL: API_URL,

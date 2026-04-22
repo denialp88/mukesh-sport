@@ -61,7 +61,7 @@ export default function RepairDetailScreen({ route }) {
     Linking.openURL('https://wa.me/' + phone91 + '?text=' + msg);
   };
 
-  const getTrackUrl = () => 'http://54-82-92-185.nip.io/r/' + (job?.job_id || '');
+  const getTrackUrl = () => 'https://mukeshsports.in/r/' + (job?.job_id || '');
 
   const webConfirm = (msg) => Platform.OS === 'web' ? window.confirm(msg) : true;
   const webAlert = (msg) => Platform.OS === 'web' ? window.alert(msg) : Alert.alert('Info', msg);

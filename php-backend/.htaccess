@@ -1,0 +1,20 @@
+RewriteEngine On
+
+# Force HTTPS (uncomment after SSL is set up)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# API routes → api/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+# Short redirect /r/JOB_ID → r/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^r/(.+)$ r/index.php?job_id=$1 [QSA,L]
+
+# Tracking page /track/TOKEN → track/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^track/(.+)$ track/index.php?token=$1 [QSA,L]
