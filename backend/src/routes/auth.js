@@ -68,4 +68,22 @@ router.post('/register', authenticate, authorizeAdmin, async (req, res) => {
   }
 });
 
+// PUT /api/auth/profile — update own name
+router.put('/profile', authenticate, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Name is required.' });
+    }
+    const [user] = await db('users')
+      .where({ id: req.user.id })
+      .update({ name: name.trim(), updated_at: db.fn.now() })
+      .returning(['id', 'name', 'phone', 'role']);
+    res.json({ user });
+  } catch (err) {
+    console.error('Update profile error:', err);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
 module.exports = router;

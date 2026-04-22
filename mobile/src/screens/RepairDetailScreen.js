@@ -262,6 +262,9 @@ export default function RepairDetailScreen({ route }) {
                 </View>
                 <View style={styles.timelineContent}>
                   <Text style={styles.timelineStatus}>{STATUS_LABELS[h.status] || h.status}</Text>
+                  {h.updated_by_name ? (
+                    <Text style={styles.timelineUser}>by {h.updated_by_name}{h.updated_by_phone ? ' (' + h.updated_by_phone + ')' : ''}</Text>
+                  ) : null}
                   {h.note ? <Text style={styles.timelineNote}>{h.note}</Text> : null}
                   <Text style={styles.timelineDate}>
                     {new Date(h.created_at).toLocaleString('en-IN', {
@@ -405,6 +408,7 @@ const styles = StyleSheet.create({
   },
   timelineContent: { flex: 1, paddingBottom: 18 },
   timelineStatus: { fontSize: 14, fontWeight: '600', color: Colors.text },
+  timelineUser: { fontSize: 12, color: Colors.primary, marginTop: 2, fontWeight: '500' },
   timelineNote: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
   timelineDate: { fontSize: 11, color: Colors.textMuted, marginTop: 4 },
 });

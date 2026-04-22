@@ -22,6 +22,7 @@ api.interceptors.request.use(async (config) => {
 
 // Auth
 export const login = (phone, password) => api.post('/auth/login', { phone, password });
+export const updateProfile = (data) => api.put('/auth/profile', data);
 
 // Customers
 export const getCustomers = (search) => api.get('/customers', { params: { search } });

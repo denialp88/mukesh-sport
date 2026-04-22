@@ -35,6 +35,12 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const updateUser = async (updatedData) => {
+    const newUser = { ...user, ...updatedData };
+    await setItem('user_data', JSON.stringify(newUser));
+    setUser(newUser);
+  };
+
   const logout = async () => {
     await deleteItem('auth_token');
     await deleteItem('user_data');
@@ -42,7 +48,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

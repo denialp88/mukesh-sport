@@ -64,8 +64,10 @@ router.get('/:id', authenticate, async (req, res) => {
     if (!job) return res.status(404).json({ error: 'Repair job not found.' });
 
     const history = await db('repair_status_history')
+      .leftJoin('users', 'repair_status_history.updated_by', 'users.id')
+      .select('repair_status_history.*', 'users.name as updated_by_name', 'users.phone as updated_by_phone')
       .where({ repair_job_id: req.params.id })
-      .orderBy('created_at', 'asc');
+      .orderBy('repair_status_history.created_at', 'asc');
 
     res.json({ job, history });
   } catch (err) {

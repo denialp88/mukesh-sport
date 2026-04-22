@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,21 +7,47 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
-import { getInstallmentDashboard, getRepairDashboard } from '../services/api';
+import { getInstallmentDashboard, getRepairDashboard, updateProfile } from '../services/api';
 import { Colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [installmentData, setInstallmentData] = useState(null);
   const [repairData, setRepairData] = useState(null);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [savingName, setSavingName] = useState(false);
+
+  useEffect(() => {
+    if (user && user.name && /^\d{7,}$/.test(user.name)) {
+      setShowNameModal(true);
+    }
+  }, [user?.name]);
+
+  const handleSaveName = async () => {
+    if (!newName.trim()) { Alert.alert('Error', 'Please enter your name.'); return; }
+    setSavingName(true);
+    try {
+      const res = await updateProfile({ name: newName.trim() });
+      await updateUser({ name: res.data.user.name });
+      setShowNameModal(false);
+    } catch (e) {
+      Alert.alert('Error', 'Could not save name.');
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -50,6 +76,30 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Name Prompt Modal */}
+      <Modal visible={showNameModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Ionicons name="person-circle-outline" size={48} color={Colors.primary} />
+            <Text style={styles.modalTitle}>Set Your Name</Text>
+            <Text style={styles.modalSubText}>Please enter your name so others can see who made updates.</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter your name"
+              placeholderTextColor={Colors.textMuted}
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+            />
+            <TouchableOpacity style={styles.modalBtn} onPress={handleSaveName} disabled={savingName}>
+              <LinearGradient colors={Colors.gradientGold} style={styles.modalBtnGrad}>
+                <Text style={styles.modalBtnText}>{savingName ? 'Saving...' : 'Save Name'}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Background decorative orbs */}
       <View style={styles.bgOrbOrange} />
       <View style={styles.bgOrbPurple} />
@@ -496,5 +546,61 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.04)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 28,
+  },
+  modalCard: {
+    backgroundColor: '#141c2e',
+    borderRadius: 24,
+    padding: 28,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: Colors.text,
+    marginTop: 12,
+  },
+  modalSubText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  modalInput: {
+    width: '100%',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: Colors.text,
+    marginBottom: 16,
+  },
+  modalBtn: {
+    width: '100%',
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  modalBtnGrad: {
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  modalBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#fff',
   },
 });
